@@ -1,0 +1,8 @@
+config SECCONTIO_FS
+	tristate "SecContIO stackable file system (EXPERIMENTAL)"
+	help
+	  SecConIO is a stackable file system which simply passes its
+	  operations to the lower layer, but may also wrap and handle access
+          from untrusted containers to some data.  It is designed as a useful
+	  template for developing or debugging other VFS features for 
+          linux containers and to use them more secure way.
