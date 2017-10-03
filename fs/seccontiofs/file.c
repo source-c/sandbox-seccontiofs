@@ -152,6 +152,23 @@ out:
 	return err;
 }
 
+#include <linux/cgroup.h>
+
+void dump_cgroup_name(struct task_struct *task)
+{
+	char *buf;
+
+	buf = kmalloc(PATH_MAX, GFP_NOFS);
+	if (!buf)
+		return;
+
+	task_cgroup_path(task, buf, PATH_MAX);
+
+	printk(KERN_INFO "%s @ %s", task->comm, buf);
+
+	kfree(buf);
+}
+
 static int seccontiofs_open(struct inode *inode, struct file *file)
 {
 	int err = 0;
@@ -190,6 +207,8 @@ static int seccontiofs_open(struct inode *inode, struct file *file)
 		kfree(seccontiofs_F(file));
 	else
 		fsstack_copy_attr_all(inode, seccontiofs_lower_inode(inode));
+
+	dump_cgroup_name(current);
 out_err:
 	return err;
 }
