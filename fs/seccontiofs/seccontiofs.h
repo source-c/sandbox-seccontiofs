@@ -33,6 +33,13 @@ extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
 /* useful for tracking code reachability */
 #define TRACE_DBG printk(KERN_DEFAULT "-> DBG:%s:%s:%d\n", __FILE__, __func__, __LINE__)
 
+/* some basic definitions */
+
+#define PRIV_LBL "P1"
+#define UNPRIV_LBL "U1"
+#define PRIV_CG_NAME "/lxc/cont-priv"
+#define PRIV_CG_NAME_LEN 14
+
 /* operations vectors defined in specific files */
 extern const struct file_operations seccontiofs_main_fops;
 extern const struct file_operations seccontiofs_dir_fops;
@@ -63,6 +70,7 @@ extern int seccontiofs_interpose(struct dentry *dentry, struct super_block *sb,
 struct seccontiofs_file_info {
 	struct file *lower_file;
 	const struct vm_operations_struct *lower_vm_ops;
+    const char *lbl;
 };
 
 /* seccontiofs inode data in memory */

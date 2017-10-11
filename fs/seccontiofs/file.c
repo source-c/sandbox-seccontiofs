@@ -1,11 +1,12 @@
 #include "seccontiofs.h"
 
-static ssize_t seccontiofs_read(struct file *file, char __user *buf,
-			   size_t count, loff_t *ppos)
+static ssize_t 
+seccontiofs_read(struct file *file, char __user * buf,
+		 size_t count, loff_t * ppos)
 {
-	int err;
-	struct file *lower_file;
-	struct dentry *dentry = file->f_path.dentry;
+	int		err;
+	struct file    *lower_file;
+	struct dentry  *dentry = file->f_path.dentry;
 
 	lower_file = seccontiofs_lower_file(file);
 	err = vfs_read(lower_file, buf, count, ppos);
@@ -17,13 +18,14 @@ static ssize_t seccontiofs_read(struct file *file, char __user *buf,
 	return err;
 }
 
-static ssize_t seccontiofs_write(struct file *file, const char __user *buf,
-			    size_t count, loff_t *ppos)
+static ssize_t 
+seccontiofs_write(struct file *file, const char __user * buf,
+		  size_t count, loff_t * ppos)
 {
-	int err;
+	int		err;
 
-	struct file *lower_file;
-	struct dentry *dentry = file->f_path.dentry;
+	struct file    *lower_file;
+	struct dentry  *dentry = file->f_path.dentry;
 
 	lower_file = seccontiofs_lower_file(file);
 	err = vfs_write(lower_file, buf, count, ppos);
@@ -34,15 +36,15 @@ static ssize_t seccontiofs_write(struct file *file, const char __user *buf,
 		fsstack_copy_attr_times(d_inode(dentry),
 					file_inode(lower_file));
 	}
-
 	return err;
 }
 
-static int seccontiofs_readdir(struct file *file, struct dir_context *ctx)
+static int 
+seccontiofs_readdir(struct file *file, struct dir_context *ctx)
 {
-	int err;
-	struct file *lower_file = NULL;
-	struct dentry *dentry = file->f_path.dentry;
+	int		err;
+	struct file    *lower_file = NULL;
+	struct dentry  *dentry = file->f_path.dentry;
 
 	lower_file = seccontiofs_lower_file(file);
 	err = iterate_dir(lower_file, ctx);
@@ -53,11 +55,12 @@ static int seccontiofs_readdir(struct file *file, struct dir_context *ctx)
 	return err;
 }
 
-static long seccontiofs_unlocked_ioctl(struct file *file, unsigned int cmd,
-				  unsigned long arg)
+static long 
+seccontiofs_unlocked_ioctl(struct file *file, unsigned int cmd,
+			   unsigned long arg)
 {
-	long err = -ENOTTY;
-	struct file *lower_file;
+	long		err = -ENOTTY;
+	struct file    *lower_file;
 
 	lower_file = seccontiofs_lower_file(file);
 
@@ -76,11 +79,12 @@ out:
 }
 
 #ifdef CONFIG_COMPAT
-static long seccontiofs_compat_ioctl(struct file *file, unsigned int cmd,
-				unsigned long arg)
+static long 
+seccontiofs_compat_ioctl(struct file *file, unsigned int cmd,
+			 unsigned long arg)
 {
-	long err = -ENOTTY;
-	struct file *lower_file;
+	long		err = -ENOTTY;
+	struct file    *lower_file;
 
 	lower_file = seccontiofs_lower_file(file);
 
@@ -95,24 +99,22 @@ out:
 }
 #endif
 
-static int seccontiofs_mmap(struct file *file, struct vm_area_struct *vma)
+static int 
+seccontiofs_mmap(struct file *file, struct vm_area_struct *vma)
 {
-	int err = 0;
-	bool willwrite;
-	struct file *lower_file;
+	int		err = 0;
+	bool		willwrite;
+	struct file    *lower_file;
 	const struct vm_operations_struct *saved_vm_ops = NULL;
 
 	/* this might be deferred to mmap's writepage */
 	willwrite = ((vma->vm_flags | VM_SHARED | VM_WRITE) == vma->vm_flags);
 
 	/*
-	 * File systems which do not implement ->writepage may use
-	 * generic_file_readonly_mmap as their ->mmap op.  If you call
-	 * generic_file_readonly_mmap with VM_WRITE, you'd get an -EINVAL.
-	 * But we cannot call the lower ->mmap op, so we can't tell that
-	 * writeable mappings won't work.  Therefore, our only choice is to
-	 * check if the lower file system supports the ->writepage, and if
-	 * not, return EINVAL (the same error that
+	 * File systems which do not implement ->writepage may use generic_file_readonly_mmap as their ->mmap op.  If
+	 * you call generic_file_readonly_mmap with VM_WRITE, you'd get an -EINVAL. But we cannot call the lower ->mmap
+	 * op, so we can't tell that writeable mappings won't work.  Therefore, our only choice is to check if the
+	 * lower file system supports the ->writepage, and if not, return EINVAL (the same error that
 	 * generic_file_readonly_mmap returns in that case).
 	 */
 	lower_file = seccontiofs_lower_file(file);
@@ -122,10 +124,9 @@ static int seccontiofs_mmap(struct file *file, struct vm_area_struct *vma)
 		       "support writeable mmap\n");
 		goto out;
 	}
-
 	/*
 	 * find and save lower vm_ops.
-	 *
+	 * 
 	 * XXX: the VFS should have a cleaner way of finding the lower vm_ops
 	 */
 	if (!seccontiofs_F(file)->lower_vm_ops) {
@@ -134,18 +135,17 @@ static int seccontiofs_mmap(struct file *file, struct vm_area_struct *vma)
 			printk(KERN_ERR "seccontiofs: lower mmap failed %d\n", err);
 			goto out;
 		}
-		saved_vm_ops = vma->vm_ops; /* save: came from lower ->mmap */
+		saved_vm_ops = vma->vm_ops;	/* save: came from lower ->mmap */
 	}
-
 	/*
-	 * Next 3 lines are all I need from generic_file_mmap.  I definitely
-	 * don't want its test for ->readpage which returns -ENOEXEC.
+	 * Next 3 lines are all I need from generic_file_mmap.  I definitely don't want its test for ->readpage which
+	 * returns -ENOEXEC.
 	 */
 	file_accessed(file);
 	vma->vm_ops = &seccontiofs_vm_ops;
 
-	file->f_mapping->a_ops = &seccontiofs_aops; /* set our aops */
-	if (!seccontiofs_F(file)->lower_vm_ops) /* save for our ->fault */
+	file->f_mapping->a_ops = &seccontiofs_aops;	/* set our aops */
+	if (!seccontiofs_F(file)->lower_vm_ops)	/* save for our ->fault */
 		seccontiofs_F(file)->lower_vm_ops = saved_vm_ops;
 
 out:
@@ -154,9 +154,10 @@ out:
 
 #include <linux/cgroup.h>
 
-void dump_cgroup_name(struct task_struct *task)
+void 
+dump_cgroup_name(struct task_struct *task)
 {
-	char *buf;
+	char           *buf;
 
 	buf = kmalloc(PATH_MAX, GFP_NOFS);
 	if (!buf)
@@ -169,25 +170,44 @@ void dump_cgroup_name(struct task_struct *task)
 	kfree(buf);
 }
 
-static int seccontiofs_open(struct inode *inode, struct file *file)
+static const char *
+cg_to_lable(struct task_struct *task)
 {
-	int err = 0;
-	struct file *lower_file = NULL;
-	struct path lower_path;
+	char           *buf, *lbl;
+
+	buf = kmalloc(PATH_MAX, GFP_NOFS);
+
+	if (!buf)
+		return NULL;
+
+	task_cgroup_path(task, buf, PATH_MAX);
+
+	lbl = (memcmp(buf, PRIV_CG_NAME, PRIV_CG_NAME_LEN) == 0) ?
+		PRIV_LBL : UNPRIV_LBL;
+
+	kfree(buf);
+
+	return lbl;
+}
+
+static int 
+seccontiofs_open(struct inode *inode, struct file *file)
+{
+	int		err = 0;
+	struct file    *lower_file = NULL;
+	struct path	lower_path;
 
 	/* don't open unhashed/deleted files */
 	if (d_unhashed(file->f_path.dentry)) {
 		err = -ENOENT;
 		goto out_err;
 	}
-
 	file->private_data =
 		kzalloc(sizeof(struct seccontiofs_file_info), GFP_KERNEL);
 	if (!seccontiofs_F(file)) {
 		err = -ENOMEM;
 		goto out_err;
 	}
-
 	/* open lower object and link seccontio's file struct to lower's */
 	seccontiofs_get_lower_path(file->f_path.dentry, &lower_path);
 	lower_file = dentry_open(&lower_path, file->f_flags, current_cred());
@@ -197,7 +217,7 @@ static int seccontiofs_open(struct inode *inode, struct file *file)
 		lower_file = seccontiofs_lower_file(file);
 		if (lower_file) {
 			seccontiofs_set_lower_file(file, NULL);
-			fput(lower_file); /* fput calls dput for lower_dentry */
+			fput(lower_file);	/* fput calls dput for lower_dentry */
 		}
 	} else {
 		seccontiofs_set_lower_file(file, lower_file);
@@ -208,47 +228,51 @@ static int seccontiofs_open(struct inode *inode, struct file *file)
 	else
 		fsstack_copy_attr_all(inode, seccontiofs_lower_inode(inode));
 
-	dump_cgroup_name(current);
+	//dump_cgroup_name(current);
+    seccontiofs_F(file)->lbl = cg_to_lable(current);
+    printk(KERN_INFO "%s @ %s\n", current->comm, seccontiofs_F(file)->lbl);
+
 out_err:
 	return err;
 }
 
-static int seccontiofs_flush(struct file *file, fl_owner_t id)
+static int 
+seccontiofs_flush(struct file *file, fl_owner_t id)
 {
-	int err = 0;
-	struct file *lower_file = NULL;
+	int		err = 0;
+	struct file    *lower_file = NULL;
 
 	lower_file = seccontiofs_lower_file(file);
 	if (lower_file && lower_file->f_op && lower_file->f_op->flush) {
 		filemap_write_and_wait(file->f_mapping);
 		err = lower_file->f_op->flush(lower_file, id);
 	}
-
 	return err;
 }
 
 /* release all lower object references & free the file info structure */
-static int seccontiofs_file_release(struct inode *inode, struct file *file)
+static int 
+seccontiofs_file_release(struct inode *inode, struct file *file)
 {
-	struct file *lower_file;
+	struct file    *lower_file;
 
 	lower_file = seccontiofs_lower_file(file);
 	if (lower_file) {
 		seccontiofs_set_lower_file(file, NULL);
 		fput(lower_file);
 	}
-
 	kfree(seccontiofs_F(file));
 	return 0;
 }
 
-static int seccontiofs_fsync(struct file *file, loff_t start, loff_t end,
-			int datasync)
+static int 
+seccontiofs_fsync(struct file *file, loff_t start, loff_t end,
+		  int datasync)
 {
-	int err;
-	struct file *lower_file;
-	struct path lower_path;
-	struct dentry *dentry = file->f_path.dentry;
+	int		err;
+	struct file    *lower_file;
+	struct path	lower_path;
+	struct dentry  *dentry = file->f_path.dentry;
 
 	err = __generic_file_fsync(file, start, end, datasync);
 	if (err)
@@ -261,10 +285,11 @@ out:
 	return err;
 }
 
-static int seccontiofs_fasync(int fd, struct file *file, int flag)
+static int 
+seccontiofs_fasync(int fd, struct file *file, int flag)
 {
-	int err = 0;
-	struct file *lower_file = NULL;
+	int		err = 0;
+	struct file    *lower_file = NULL;
 
 	lower_file = seccontiofs_lower_file(file);
 	if (lower_file->f_op && lower_file->f_op->fasync)
@@ -274,15 +299,14 @@ static int seccontiofs_fasync(int fd, struct file *file, int flag)
 }
 
 /*
- * seccontiofs cannot use generic_file_llseek as ->llseek, because it would
- * only set the offset of the upper file.  So we have to implement our
- * own method to set both the upper and lower file offsets
- * consistently.
+ * seccontiofs cannot use generic_file_llseek as ->llseek, because it would only set the offset of the upper file.  So
+ * we have to implement our own method to set both the upper and lower file offsets consistently.
  */
-static loff_t seccontiofs_file_llseek(struct file *file, loff_t offset, int whence)
+static loff_t 
+seccontiofs_file_llseek(struct file *file, loff_t offset, int whence)
 {
-	int err;
-	struct file *lower_file;
+	int		err;
+	struct file    *lower_file;
 
 	err = generic_file_llseek(file, offset, whence);
 	if (err < 0)
@@ -301,16 +325,15 @@ out:
 ssize_t
 seccontiofs_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 {
-	int err;
-	struct file *file = iocb->ki_filp, *lower_file;
+	int		err;
+	struct file    *file = iocb->ki_filp, *lower_file;
 
 	lower_file = seccontiofs_lower_file(file);
 	if (!lower_file->f_op->read_iter) {
 		err = -EINVAL;
 		goto out;
 	}
-
-	get_file(lower_file); /* prevent lower_file from being released */
+	get_file(lower_file);	/* prevent lower_file from being released */
 	iocb->ki_filp = lower_file;
 	err = lower_file->f_op->read_iter(iocb, iter);
 	iocb->ki_filp = file;
@@ -329,16 +352,15 @@ out:
 ssize_t
 seccontiofs_write_iter(struct kiocb *iocb, struct iov_iter *iter)
 {
-	int err;
-	struct file *file = iocb->ki_filp, *lower_file;
+	int		err;
+	struct file    *file = iocb->ki_filp, *lower_file;
 
 	lower_file = seccontiofs_lower_file(file);
 	if (!lower_file->f_op->write_iter) {
 		err = -EINVAL;
 		goto out;
 	}
-
-	get_file(lower_file); /* prevent lower_file from being released */
+	get_file(lower_file);	/* prevent lower_file from being released */
 	iocb->ki_filp = lower_file;
 	err = lower_file->f_op->write_iter(iocb, iter);
 	iocb->ki_filp = file;
@@ -355,35 +377,35 @@ out:
 }
 
 const struct file_operations seccontiofs_main_fops = {
-	.llseek		= generic_file_llseek,
-	.read		= seccontiofs_read,
-	.write		= seccontiofs_write,
-	.unlocked_ioctl	= seccontiofs_unlocked_ioctl,
+	.llseek = generic_file_llseek,
+	.read = seccontiofs_read,
+	.write = seccontiofs_write,
+	.unlocked_ioctl = seccontiofs_unlocked_ioctl,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl	= seccontiofs_compat_ioctl,
+	.compat_ioctl = seccontiofs_compat_ioctl,
 #endif
-	.mmap		= seccontiofs_mmap,
-	.open		= seccontiofs_open,
-	.flush		= seccontiofs_flush,
-	.release	= seccontiofs_file_release,
-	.fsync		= seccontiofs_fsync,
-	.fasync		= seccontiofs_fasync,
-	.read_iter	= seccontiofs_read_iter,
-	.write_iter	= seccontiofs_write_iter,
+	.mmap = seccontiofs_mmap,
+	.open = seccontiofs_open,
+	.flush = seccontiofs_flush,
+	.release = seccontiofs_file_release,
+	.fsync = seccontiofs_fsync,
+	.fasync = seccontiofs_fasync,
+	.read_iter = seccontiofs_read_iter,
+	.write_iter = seccontiofs_write_iter,
 };
 
 /* trimmed directory options */
 const struct file_operations seccontiofs_dir_fops = {
-	.llseek		= seccontiofs_file_llseek,
-	.read		= generic_read_dir,
-	.iterate	= seccontiofs_readdir,
-	.unlocked_ioctl	= seccontiofs_unlocked_ioctl,
+	.llseek = seccontiofs_file_llseek,
+	.read = generic_read_dir,
+	.iterate = seccontiofs_readdir,
+	.unlocked_ioctl = seccontiofs_unlocked_ioctl,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl	= seccontiofs_compat_ioctl,
+	.compat_ioctl = seccontiofs_compat_ioctl,
 #endif
-	.open		= seccontiofs_open,
-	.release	= seccontiofs_file_release,
-	.flush		= seccontiofs_flush,
-	.fsync		= seccontiofs_fsync,
-	.fasync		= seccontiofs_fasync,
+	.open = seccontiofs_open,
+	.release = seccontiofs_file_release,
+	.flush = seccontiofs_flush,
+	.fsync = seccontiofs_fsync,
+	.fasync = seccontiofs_fasync,
 };
