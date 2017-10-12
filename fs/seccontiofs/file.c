@@ -55,6 +55,36 @@ seccontiofs_readdir(struct file *file, struct dir_context *ctx)
 	return err;
 }
 
+static inline int __is_private(const char *lbl){
+    return (memcmp(lbl, PRIV_LBL, LABEL_LEN) == 0);
+}
+
+static inline int __is_writable(int mode){
+    return (mode == WRITABLE_MODE);
+}
+
+static long
+seccontiofs_toggle_mode(struct file *file, void *__user * arg)
+{
+    long err = -ENOTTY;
+    struct super_block *sb;
+    
+    /**
+     * NOTE: flush all pages from cache!
+     */
+    sb = file_inode(file)->i_sb;
+    shrink_dcache_sb(sb);
+    
+    //_pr_info_tr("Processing Change Mode IOCTL call\n");
+    
+    if (__is_private(seccontiofs_F(file)->lbl))
+        return err;
+    
+    seccontiofs_SB(sb)->__mode = ~seccontiofs_SB(sb)->__mode;
+    
+    return 0;
+}
+
 static long 
 seccontiofs_unlocked_ioctl(struct file *file, unsigned int cmd,
 			   unsigned long arg)
@@ -64,13 +94,19 @@ seccontiofs_unlocked_ioctl(struct file *file, unsigned int cmd,
 
 	lower_file = seccontiofs_lower_file(file);
 
-	/* XXX: use vfs_ioctl if/when VFS exports it */
-	if (!lower_file || !lower_file->f_op)
-		goto out;
-	if (lower_file->f_op->unlocked_ioctl)
-		err = lower_file->f_op->unlocked_ioctl(lower_file, cmd, arg);
+    /* XXX: use vfs_ioctl if/when VFS exports it */
+    if (!lower_file || !lower_file->f_op)
+        goto out;
+    
+    void __user *argp = (void __user *)arg;
+    
+    switch (cmd) {
+        case SECCONTIOFS_IOCTL_IOMSG:
+            err = seccontiofs_toggle_mode(file, argp);
+            break;
+    }
 
-	/* some ioctls can change inode attributes (EXT2_IOC_SETFLAGS) */
+    /* some ioctls can change inode attributes (EXT2_IOC_SETFLAGS) */
 	if (!err)
 		fsstack_copy_attr_all(file_inode(file),
 				      file_inode(lower_file));

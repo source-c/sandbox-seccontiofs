@@ -33,10 +33,31 @@ extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
 /* useful for tracking code reachability */
 #define TRACE_DBG printk(KERN_DEFAULT "-> DBG:%s:%s:%d\n", __FILE__, __func__, __LINE__)
 
+#if defined(BSD) || defined(__APPLE__)
+#include <stdint.h>
+typedef uint8_t __u8;
+typedef uint16_t __u16;
+typedef uint32_t __u32;
+typedef uint64_t __u64;
+#else
+#include <linux/types.h>    // linux kernel/ASM types
+#endif
+
+// Add __attribute__((packed)) if compiler supports it
+// because some gcc versions (at least ARM) lack support of #pragma pack()
+
+#ifdef HAVE_ATTR_PACKED
+#define ATTR_PACKED __attribute__((packed))
+#else
+#define ATTR_PACKED
+#endif
+
 /* some basic definitions */
 
 #define PRIV_LBL "P1"
 #define UNPRIV_LBL "U1"
+#define LABEL_LEN 2
+#define WRITABLE_MODE -1
 #define PRIV_CG_NAME "/lxc/cont-priv"
 #define PRIV_CG_NAME_LEN 14
 
@@ -71,6 +92,7 @@ struct seccontiofs_file_info {
 	struct file *lower_file;
 	const struct vm_operations_struct *lower_vm_ops;
     const char *lbl;
+    int __mode = WRITABLE_MODE;
 };
 
 /* seccontiofs inode data in memory */
@@ -88,6 +110,7 @@ struct seccontiofs_dentry_info {
 /* seccontiofs super-block data in memory */
 struct seccontiofs_sb_info {
 	struct super_block *lower_sb;
+    int __mode = WRITABLE_MODE;
 };
 
 /*
@@ -209,4 +232,14 @@ static inline void unlock_dir(struct dentry *dir)
 	inode_unlock(d_inode(dir));
 	dput(dir);
 }
+
+typedef struct {
+    __u8 len;
+    __u8 type;
+    unsigned char payload[14];
+} ATTR_PACKED sciomsg;
+
+#define SECCONTIOFS_IOCTL_MAGIC         'x'
+
+#define SECCONTIOFS_IOCTL_IOMSG    _IOW(SECCONTIOFS_IOCTL_MAGIC, 0x8F, sciomsg*)
 #endif	/* not _SECCONTIOFS_H_ */
