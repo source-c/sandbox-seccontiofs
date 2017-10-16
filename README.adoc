@@ -1,0 +1,58 @@
+= SecContIOFS
+
+Is a toy-vsf-wrapper to illustrate File IO interception importance
+for OS level virtualisation (i.e. containerization).
+
+== Prepare
+
+. clone *SecContIOFS* repository from https://github.com/source-c/sandbox-seccontiofs.git[GitHub]
+. prepare environment
+.. setup bridge or set of dedicated `phys` network devices (per container)
+.. build and install kernel with SMACK support
+.. install LXC & LXCFS
+
+    apt-get install lxc lxcfs
+
+.. place base container rootfs at ```/srv/data/lxc-base/rootfs```
+.. prepare places for U & P containers ```/srv/data/cont-priv``` and ```/srv/data/cont-unpriv``` respectively
+.. place configs
+.. create mount points for U & P containers
+
+    mkdir /srv/data/cont1 /srv/data/cont2
+
+. build module
+
+    cd <cloned-repo>/fs/seccontiofs
+    make
+
+. load module into the kernel
+
+    insmod seccontiofs.ko
+
+. check its available
+
+    grep seccontiofs /proc/filesystems
+
+. mount rootfs for your containers
+
+    mount -t seccontiofs /path/to/basefs /path/to/contfs
+
+=== tools
+
+==== to check attrs from cmdline
+
+[source, bash]
+----
+ # apt-get install acl
+ # getfacl <file>
+
+ # apt-get install attr
+ # getfattr <file>
+
+ # apt-get install xattr
+ # xattr <file>
+----
+
+==== to check FS internals
+
+SecContIOFS contains set of tools at ```check``` dir.

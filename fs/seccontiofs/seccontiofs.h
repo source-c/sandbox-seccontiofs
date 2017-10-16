@@ -38,15 +38,6 @@ extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
 #define _pr_info_tr(fmt, arg...) printk(KERN_INFO KBUILD_MODNAME "(%s): " fmt, __func__ ,##arg)
 #define _pr_err_tr(fmt, arg...) printk(KERN_ERR KBUILD_MODNAME "(%s): " fmt, __func__ ,##arg)
 
-/* some basic definitions */
-
-#define PRIV_LBL "P1"
-#define UNPRIV_LBL "U1"
-#define LABEL_LEN 2
-#define WRITABLE_MODE -1
-#define PRIV_CG_NAME "/lxc/cont-priv"
-#define PRIV_CG_NAME_LEN 14
-
 /* operations vectors defined in specific files */
 extern const struct file_operations seccontiofs_main_fops;
 extern const struct file_operations seccontiofs_dir_fops;
