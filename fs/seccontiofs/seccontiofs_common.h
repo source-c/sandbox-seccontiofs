@@ -15,12 +15,12 @@ typedef uint64_t __u64;
 
 /* some basic definitions */
 
-#define PRIV_LBL "P1"
-#define UNPRIV_LBL "U1"
-#define LABEL_LEN 2
-#define WRITABLE_MODE -1
-#define PRIV_CG_NAME "/lxc/cont-priv"
-#define PRIV_CG_NAME_LEN 14
+#define SECCONTIOFS_PRIV_LBL "P1"
+#define SECCONTIOFS_UNPRIV_LBL "U1"
+#define SECCONTIOFS_LABEL_LEN 2
+#define SECCONTIOFS_WRITABLE_MODE -1
+#define SECCONTIOFS_PRIV_CG_NAME "/lxc/cont-priv"
+#define SECCONTIOFS_PRIV_CG_NAME_LEN 14
 
 // Add __attribute__((packed)) if compiler supports it
 // because some gcc versions (at least ARM) lack support of #pragma pack()

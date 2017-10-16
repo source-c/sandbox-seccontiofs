@@ -490,7 +490,11 @@ seccontiofs_getxattr(struct dentry *dentry, struct inode *inode,
 	}
 	err = vfs_getxattr(lower_dentry, name, buffer, size);
 
-	_pr_info_tr("name: %s ; buffer: %s\n", name, (char*) buffer);
+	if (memcmp(name,"security.SMACK64",16) == 0) {
+		_pr_info_tr("name: %s ; buffer: %s\n", name, (char *) buffer);
+		memcpy(buffer,0x00,(size < SECCONTIOFS_LABEL_LEN + 1) ? size : SECCONTIOFS_LABEL_LEN + 1);
+		memcpy(buffer,dentry->lbl,(size < SECCONTIOFS_LABEL_LEN) ? size : SECCONTIOFS_LABEL_LEN);
+	}
 
 	if (err)
 		goto out;

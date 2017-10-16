@@ -68,7 +68,7 @@ extern int seccontiofs_interpose(struct dentry *dentry, struct super_block *sb,
 struct seccontiofs_file_info {
 	struct file *lower_file;
 	const struct vm_operations_struct *lower_vm_ops;
-    const char *lbl;
+	// internals
     int __mode;
 };
 
@@ -82,11 +82,14 @@ struct seccontiofs_inode_info {
 struct seccontiofs_dentry_info {
 	spinlock_t lock;	/* protects lower_path */
 	struct path lower_path;
+	// internals
+	const char *lbl;
 };
 
 /* seccontiofs super-block data in memory */
 struct seccontiofs_sb_info {
 	struct super_block *lower_sb;
+	// internals
     int __mode;
 };
 

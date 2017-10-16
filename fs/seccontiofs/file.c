@@ -68,6 +68,7 @@ seccontiofs_toggle_mode(struct file *file, void *__user * arg)
 {
     long err = -ENOTTY;
     struct super_block *sb;
+	struct dentry *dentry = file->f_path.dentry;
     
     /**
      * NOTE: flush all pages from cache!
@@ -77,7 +78,7 @@ seccontiofs_toggle_mode(struct file *file, void *__user * arg)
     
     _pr_info_tr("Processing Change Mode IOCTL call\n");
     
-    if (__is_private(seccontiofs_F(file)->lbl)) {
+    if (__is_private(seccontiofs_D(dentry)->lbl)) {
         _pr_info_tr("... Change Mode IOCTL call is blocked for %s\n", seccontiofs_F(file)->lbl);
         return err;
     }
@@ -199,7 +200,7 @@ dump_cgroup_name(struct task_struct *task)
 static const char *
 cg_to_lable(struct task_struct *task)
 {
-	char           *buf, *lbl;
+	char *buf, *lbl;
 
 	buf = kmalloc(PATH_MAX, GFP_NOFS);
 
@@ -222,6 +223,7 @@ seccontiofs_open(struct inode *inode, struct file *file)
 	int		err = 0;
 	struct file    *lower_file = NULL;
 	struct path	lower_path;
+	struct dentry *dentry = file->f_path.dentry;
 
 	/* don't open unhashed/deleted files */
 	if (d_unhashed(file->f_path.dentry)) {
@@ -255,8 +257,8 @@ seccontiofs_open(struct inode *inode, struct file *file)
 		fsstack_copy_attr_all(inode, seccontiofs_lower_inode(inode));
 
 	//dump_cgroup_name(current);
-    seccontiofs_F(file)->lbl = cg_to_lable(current);
-    printk(KERN_INFO "%s @ %s\n", current->comm, seccontiofs_F(file)->lbl);
+    seccontiofs_D(dentry)->lbl = cg_to_lable(current);
+    printk(KERN_INFO "%s @ %s\n", current->comm, seccontiofs_D(dentry)->lbl);
 
 out_err:
     seccontiofs_F(file)->__mode = seccontiofs_SB(file_inode(file)->i_sb);
