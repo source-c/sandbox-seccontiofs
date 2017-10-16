@@ -91,6 +91,7 @@ struct seccontiofs_sb_info {
 	struct super_block *lower_sb;
 	// internals
     int __mode;
+	const char *lbl;
 };
 
 /*

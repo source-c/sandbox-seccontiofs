@@ -257,7 +257,10 @@ seccontiofs_open(struct inode *inode, struct file *file)
 		fsstack_copy_attr_all(inode, seccontiofs_lower_inode(inode));
 
 	//dump_cgroup_name(current);
-    seccontiofs_D(dentry)->lbl = cg_to_lable(current);
+	const char *SB_L = seccontiofs_SB(file_inode(file)->i_sb)->lbl;
+
+    seccontiofs_D(dentry)->lbl = SB_L ?  SB_L : cg_to_lable(current);
+
     printk(KERN_INFO "%s @ %s\n", current->comm, seccontiofs_D(dentry)->lbl);
 
 out_err:

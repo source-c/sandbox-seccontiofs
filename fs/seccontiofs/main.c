@@ -92,6 +92,7 @@ static int seccontiofs_read_super(struct super_block *sb, void *raw_data, int si
 		       dev_name, lower_sb->s_type->name);
 
 	seccontiofs_SB(sb)->__mode = SECCONTIOFS_WRITABLE_MODE;
+	seccontiofs_SB(sb)->lbl = NULL; // FIXME: should be passed via cmdline
 	goto out; /* all is well */
 
 	/* no longer needed: free_dentry_private_data(sb->s_root); */
