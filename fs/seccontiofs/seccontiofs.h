@@ -35,6 +35,9 @@ extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
 /* useful for tracking code reachability */
 #define TRACE_DBG printk(KERN_DEFAULT "-> DBG:%s:%s:%d\n", __FILE__, __func__, __LINE__)
 
+#define _pr_info_tr(fmt, arg...) printk(KERN_INFO KBUILD_MODNAME "(%s): " fmt, __func__ ,##arg)
+#define _pr_err_tr(fmt, arg...) printk(KERN_ERR KBUILD_MODNAME "(%s): " fmt, __func__ ,##arg)
+
 /* some basic definitions */
 
 #define PRIV_LBL "P1"
