@@ -17,6 +17,8 @@
 #include <linux/xattr.h>
 #include <linux/exportfs.h>
 
+#include <linux/cgroup.h>
+
 #include "seccontiofs_common.h"
 
 #ifndef SECCONTIOFS_SUPER_MAGIC
@@ -212,6 +214,28 @@ static inline void unlock_dir(struct dentry *dir)
 {
 	inode_unlock(d_inode(dir));
 	dput(dir);
+}
+
+/* internal helpers */
+
+inline static const char *
+cg_to_lable(const struct task_struct *task)
+{
+	char *buf, *lbl;
+
+	buf = kmalloc(PATH_MAX, GFP_NOFS);
+
+	if (!buf)
+		return NULL;
+
+	task_cgroup_path(task, buf, PATH_MAX);
+
+	lbl = (memcmp(buf, SECCONTIOFS_PRIV_CG_NAME, SECCONTIOFS_PRIV_CG_NAME_LEN) == 0) ?
+		  SECCONTIOFS_PRIV_LBL : SECCONTIOFS_UNPRIV_LBL;
+
+	kfree(buf);
+
+	return lbl;
 }
 
 #endif	/* not _SECCONTIOFS_H_ */

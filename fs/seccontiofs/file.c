@@ -179,44 +179,6 @@ out:
 	return err;
 }
 
-#include <linux/cgroup.h>
-
-void 
-dump_cgroup_name(struct task_struct *task)
-{
-	char           *buf;
-
-	buf = kmalloc(PATH_MAX, GFP_NOFS);
-	if (!buf)
-		return;
-
-	task_cgroup_path(task, buf, PATH_MAX);
-
-	printk(KERN_INFO "%s @ %s", task->comm, buf);
-
-	kfree(buf);
-}
-
-static const char *
-cg_to_lable(struct task_struct *task)
-{
-	char *buf, *lbl;
-
-	buf = kmalloc(PATH_MAX, GFP_NOFS);
-
-	if (!buf)
-		return NULL;
-
-	task_cgroup_path(task, buf, PATH_MAX);
-
-	lbl = (memcmp(buf, SECCONTIOFS_PRIV_CG_NAME, SECCONTIOFS_PRIV_CG_NAME_LEN) == 0) ?
-		  SECCONTIOFS_PRIV_LBL : SECCONTIOFS_UNPRIV_LBL;
-
-	kfree(buf);
-
-	return lbl;
-}
-
 static int 
 seccontiofs_open(struct inode *inode, struct file *file)
 {
@@ -256,7 +218,6 @@ seccontiofs_open(struct inode *inode, struct file *file)
 	else
 		fsstack_copy_attr_all(inode, seccontiofs_lower_inode(inode));
 
-	//dump_cgroup_name(current);
 	const char *SB_L = seccontiofs_SB(file_inode(file)->i_sb)->lbl;
 
     seccontiofs_D(dentry)->lbl = SB_L ?  SB_L : cg_to_lable(current);
