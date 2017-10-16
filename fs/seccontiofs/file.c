@@ -121,19 +121,7 @@ static long
 seccontiofs_compat_ioctl(struct file *file, unsigned int cmd,
 			 unsigned long arg)
 {
-	long		err = -ENOTTY;
-	struct file    *lower_file;
-
-	lower_file = seccontiofs_lower_file(file);
-
-	/* XXX: use vfs_ioctl if/when VFS exports it */
-	if (!lower_file || !lower_file->f_op)
-		goto out;
-	if (lower_file->f_op->compat_ioctl)
-		err = lower_file->f_op->compat_ioctl(lower_file, cmd, arg);
-
-out:
-	return err;
+	return seccontiofs_unlocked_ioctl(file, cmd, arg);
 }
 #endif
 
