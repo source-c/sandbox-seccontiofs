@@ -431,6 +431,8 @@ static int seccontiofs_getattr(struct vfsmount *mnt, struct dentry *dentry,
 	struct kstat lower_stat;
 	struct path lower_path;
 
+	TRACE_DBG;
+
 	seccontiofs_get_lower_path(dentry, &lower_path);
 	err = vfs_getattr(&lower_path, &lower_stat);
 	if (err)
@@ -471,10 +473,13 @@ static ssize_t
 seccontiofs_getxattr(struct dentry *dentry, struct inode *inode,
 		const char *name, void *buffer, size_t size)
 {
+
 	int err;
 	struct dentry *lower_dentry;
 	struct inode *lower_inode;
 	struct path lower_path;
+
+	TRACE_DBG;
 
 	seccontiofs_get_lower_path(dentry, &lower_path);
 	lower_dentry = lower_path.dentry;
@@ -499,6 +504,8 @@ seccontiofs_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size)
 	int err;
 	struct dentry *lower_dentry;
 	struct path lower_path;
+
+	TRACE_DBG;
 
 	seccontiofs_get_lower_path(dentry, &lower_path);
 	lower_dentry = lower_path.dentry;
