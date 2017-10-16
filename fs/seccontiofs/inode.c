@@ -490,10 +490,10 @@ seccontiofs_getxattr(struct dentry *dentry, struct inode *inode,
 	}
 	err = vfs_getxattr(lower_dentry, name, buffer, size);
 
+	_pr_info_tr("name: %s ; buffer: %s\n", name, (char*) buffer);
+
 	if (err)
 		goto out;
-
-	_pr_info_tr("name: %s ; buffer: %s\n", name, (char*) buffer);
 
 	fsstack_copy_attr_atime(d_inode(dentry),
 				d_inode(lower_path.dentry));
