@@ -1,4 +1,9 @@
 = SecContIOFS
+MelKori <mieldo@gmail.com>
+0, 2017-10-10 (0.0.1): SecContIOFS
+:toc: right
+:toclevels: 4
+{empty}
 
 Is a toy-vsf-wrapper to illustrate File IO interception importance
 for OS level virtualisation (i.e. containerization).
@@ -6,7 +11,7 @@ for OS level virtualisation (i.e. containerization).
 == Prepare
 
 . clone *SecContIOFS* repository from https://github.com/source-c/sandbox-seccontiofs.git[GitHub]
-. prepare environment
+. prepare environment (tests and checks were done on ```SMACK enabled Linux debian v4.9.30```)
 .. setup bridge or set of dedicated `phys` network devices (per container)
 .. build and install kernel with SMACK support
 .. install LXC & LXCFS
