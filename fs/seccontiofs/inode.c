@@ -495,9 +495,12 @@ seccontiofs_getxattr(struct dentry *dentry, struct inode *inode,
 	err = vfs_getxattr(lower_dentry, name, buffer, size);
 
 	if (seccontiofs_D(dentry)->lbl && buffer && memcmp(name,"security.SMACK64",16) == 0) { // i.e. SMACK64*
-		_pr_info_tr("name: %s ; buffer: %s\n", name, (char *) buffer);
+		_pr_info_tr("name: %s ; err: %d ; buffer: %s\n", name, err, (char *) buffer);
 		memset(buffer,0x00,(err < SECCONTIOFS_LABEL_LEN + 1) ? size : SECCONTIOFS_LABEL_LEN + 1);
-		memcpy(buffer,seccontiofs_D(dentry)->lbl,(size < SECCONTIOFS_LABEL_LEN) ? size : SECCONTIOFS_LABEL_LEN);
+		if (seccontiofs_D(dentry)->lbl && strlen(seccontiofs_D(dentry)->lbl))
+			memcpy(buffer,seccontiofs_D(dentry)->lbl,(size < SECCONTIOFS_LABEL_LEN) ? size : SECCONTIOFS_LABEL_LEN);
+		else
+			_pr_err_tr("FS inner LBL is not defined. Yet?\n");
 	}
 
 	if (err)

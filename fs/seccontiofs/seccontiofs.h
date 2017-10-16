@@ -219,7 +219,7 @@ static inline void unlock_dir(struct dentry *dir)
 /* internal helpers */
 
 inline static const char *
-cg_to_lable(const struct task_struct *task)
+cg_to_lable(struct task_struct *task)
 {
 	char *buf, *lbl;
 
