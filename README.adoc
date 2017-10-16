@@ -72,6 +72,42 @@ or
 
     chsmack -a label /path/to/a/file
 
+=== SMACK attributes
+
+The extended attributes that SMACK uses are:
+
+SMACK64::
+Used to make access control decisions.
+In almost all cases the label given to a new filesystem object will be the label
+of the process that created it.
+
+SMACK64EXEC::
+The SMACK label of a process that execs a program file with this attribute set
+will run with this attribute’s value.
+
+SMACK64MMAP::
+Don’t allow the file to be mmapped by a process whose SMACK label does not allow
+all of the access permitted to a process with the label contained in this attribute.
+This is a very specific use case for shared libraries.
+
+SMACK64TRANSMUTE::
+Can only have the value “TRUE”.
+If this attribute is present on a directory when an object is created in the directory
+and the SMACK rule that permitted the write access to the directory includes
+the transmute (“t”) mode the object gets the label of the directory instead
+of the label of the creating process. If the object being created is a directory the
+SMACK64TRANSMUTE attribute is set as well.
+
+SMACK64IPIN::
+This attribute is only available on file descriptors for sockets.
+Use the SMACK label in this attribute for access control decisions on packets being
+delivered to this socket.
+
+SMACK64IPOUT
+This attribute is only available on file descriptors for sockets.
+Use the SMACK label in this attribute for access control decisions on packets coming
+from this socket.
+
 === SMACK rules
 
 Using the smackload utility it is possible to add access rules in /etc/smack/accesses.
