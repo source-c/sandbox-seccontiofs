@@ -56,11 +56,11 @@ seccontiofs_readdir(struct file *file, struct dir_context *ctx)
 }
 
 static inline int __is_private(const char *lbl){
-    return (memcmp(lbl, PRIV_LBL, LABEL_LEN) == 0);
+    return (memcmp(lbl, SECCONTIOFS_PRIV_LBL, SECCONTIOFS_LABEL_LEN) == 0);
 }
 
 static inline int __is_writable(int mode){
-    return (mode == WRITABLE_MODE);
+    return (mode == SECCONTIOFS_WRITABLE_MODE);
 }
 
 static long
@@ -209,8 +209,8 @@ cg_to_lable(struct task_struct *task)
 
 	task_cgroup_path(task, buf, PATH_MAX);
 
-	lbl = (memcmp(buf, PRIV_CG_NAME, PRIV_CG_NAME_LEN) == 0) ?
-		PRIV_LBL : UNPRIV_LBL;
+	lbl = (memcmp(buf, SECCONTIOFS_PRIV_CG_NAME, SECCONTIOFS_PRIV_CG_NAME_LEN) == 0) ?
+		  SECCONTIOFS_PRIV_LBL : SECCONTIOFS_UNPRIV_LBL;
 
 	kfree(buf);
 
