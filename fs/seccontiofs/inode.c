@@ -481,9 +481,7 @@ seccontiofs_getxattr(struct dentry *dentry, struct inode *inode,
 
 	TRACE_DBG;
 
-	seccontiofs_D(dentry)->lbl = seccontiofs_SB(dentry->d_inode->i_sb)->lbl ?
-								 seccontiofs_SB(dentry->d_inode->i_sb)->lbl :
-								 cg_to_lable(current);
+	seccontiofs_D(dentry)->lbl = cg_to_lable(current);
 
 	seccontiofs_get_lower_path(dentry, &lower_path);
 	lower_dentry = lower_path.dentry;
@@ -494,7 +492,7 @@ seccontiofs_getxattr(struct dentry *dentry, struct inode *inode,
 	}
 	err = vfs_getxattr(lower_dentry, name, buffer, size);
 
-	if (seccontiofs_D(dentry)->lbl && buffer && memcmp(name,"security.SMACK64",16) == 0) { // i.e. SMACK64*
+	if (err > 0 && seccontiofs_D(dentry)->lbl && buffer && memcmp(name,"security.SMACK64",16) == 0) { // i.e. SMACK64*
 		_pr_info_tr("name: %s ; err: %d ; buffer: %s\n", name, err, (char *) buffer);
 		memset(buffer,0x00,(err < SECCONTIOFS_LABEL_LEN + 1) ? size : SECCONTIOFS_LABEL_LEN + 1);
 		if (seccontiofs_D(dentry)->lbl && strlen(seccontiofs_D(dentry)->lbl))
