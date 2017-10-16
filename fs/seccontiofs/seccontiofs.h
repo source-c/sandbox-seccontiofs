@@ -75,7 +75,7 @@ struct seccontiofs_file_info {
 	struct file *lower_file;
 	const struct vm_operations_struct *lower_vm_ops;
     const char *lbl;
-    int __mode = WRITABLE_MODE;
+    int __mode;
 };
 
 /* seccontiofs inode data in memory */
@@ -93,7 +93,7 @@ struct seccontiofs_dentry_info {
 /* seccontiofs super-block data in memory */
 struct seccontiofs_sb_info {
 	struct super_block *lower_sb;
-    int __mode = WRITABLE_MODE;
+    int __mode;
 };
 
 /*

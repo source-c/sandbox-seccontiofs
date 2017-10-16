@@ -90,6 +90,8 @@ static int seccontiofs_read_super(struct super_block *sb, void *raw_data, int si
 		printk(KERN_INFO
 		       "seccontiofs: mounted on top of %s type %s\n",
 		       dev_name, lower_sb->s_type->name);
+
+	seccontiofs_SB(sb)->__mode = WRITABLE_MODE;
 	goto out; /* all is well */
 
 	/* no longer needed: free_dentry_private_data(sb->s_root); */

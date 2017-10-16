@@ -269,6 +269,7 @@ seccontiofs_open(struct inode *inode, struct file *file)
     printk(KERN_INFO "%s @ %s\n", current->comm, seccontiofs_F(file)->lbl);
 
 out_err:
+    seccontiofs_F(file)->__mode = seccontiofs_SB(file_inode(file)->i_sb);
 	return err;
 }
 
