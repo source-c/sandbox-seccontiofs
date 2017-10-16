@@ -481,8 +481,8 @@ seccontiofs_getxattr(struct dentry *dentry, struct inode *inode,
 
 	TRACE_DBG;
 
-	seccontiofs_D(dentry)->lbl = dentry->d_inode->i_sb->lbl ?
-								 dentry->d_inode->i_sb->lbl :
+	seccontiofs_D(dentry)->lbl = seccontiofs_SB(dentry->d_inode->i_sb)->lbl ?
+								 seccontiofs_SB(dentry->d_inode->i_sb)->lbl :
 								 cg_to_lable(current);
 
 	seccontiofs_get_lower_path(dentry, &lower_path);
