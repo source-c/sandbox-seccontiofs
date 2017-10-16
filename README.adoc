@@ -29,7 +29,7 @@ for OS level virtualisation (i.e. containerization).
 
     insmod seccontiofs.ko
 
-. check its available
+. check it's available
 
     grep seccontiofs /proc/filesystems
 
@@ -56,3 +56,79 @@ for OS level virtualisation (i.e. containerization).
 ==== to check FS internals
 
 SecContIOFS contains set of tools at ```check``` dir.
+
+== SMACK
+
+Simplest way to set SMACK label on a file is:
+
+    attr -S -s SMACK64 -V "label" /path/to/a/file
+
+or
+
+    chsmack -a label /path/to/a/file
+
+=== SMACK rules
+
+Using the smackload utility it is possible to add access rules in /etc/smack/accesses.
+They take the form:
+
+    subjectlabel objectlabel accessspec
+
+Where ```accessspec``` is a combination of the letters ```rwxatb``` which specify the kind
+of access permitted a subject with ```subjectlabel``` on an object with ```objectlabel```.
+
+If there is no rule no access is allowed.
+
+=== SMACK glossary
+
+The jargon used to talk about Smack will be familiar to those who have dealt with other
+MAC systems and shouldn’t be too difficult for the uninitiated to pick up.
+There are four terms that are used in a specific way and that are especially important:
+
+Subject::
+A subject is an active entity on the computer system.
+On SMACK a subject is a task, which is in turn the basic unit of execution.
+
+Object::
+An object is a passive entity on the computer system.
+On SMACK files of all types, IPC, and tasks can be objects.
+
+Access::
+Any attempt by a subject to put information into or get information from an object is an access.
+
+Label::
+Data that identifies the Mandatory Access Control characteristics of a subject or an object.
+
+These definitions are consistent with the traditional use in the security community.
+There are also some terms from Linux that are likely to crop up:
+
+Capability::
+A task that possesses a capability has permission to violate an aspect of the system
+security policy, as identified by the specific capability.
+A task that possesses one or more capabilities is a privileged task,
+whereas a task with no capabilities is an unprivileged task.
+
+Privilege::
+A task that is allowed to violate the system security policy is said to have privilege.
+As of this writing a task can have privilege either by possessing capabilities
+or by having an effective user of root.
+
+=== SMACK toy-policy
+
+This sandbox is intended to cover the following case: two virtual systems at containers
+from a common rootfs with a fully controlled activity (capabilities, seccomp, acl, namespaces, IO),
+where running application are in a jail and fully managed by some kind of ControlApp.
+Host behavior depends on some external activity and thus changes containers mode and rules for applications.
+Cross-container access is strictly prohibited.
+Jail break should be impossible.
+
+.Basic (startup) policy
+[source, text]
+----
+U1 _ rwa
+_ U1 rwa
+P1 _ rwa
+_ P1 rwa
+_ host rwax
+host _ rwax
+----
