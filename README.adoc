@@ -13,7 +13,41 @@ for OS level virtualisation (i.e. containerization).
 . clone *SecContIOFS* repository from https://github.com/source-c/sandbox-seccontiofs.git[GitHub]
 . prepare environment (tests and checks were done on ```SMACK enabled Linux debian v4.9.30```)
 .. setup bridge or set of dedicated `phys` network devices (per container)
+... default: bridge + veth
 .. build and install kernel with SMACK support
+
+[source, bash]
+----
+sudo apt-get install build-essential fakeroot
+sudo apt-get build-dep linux
+apt-get source linux/stable
+cd linux-4.9.30/
+debian/rules debian/control
+sudo apt-get install libncursesw5-dev
+make nconfig
+
+========= .config =============
+
+--- Networking support
+    Networking options  --->
+        [*] NetLabel subsystem support
+    Security options  --->
+        [*] Simplified Mandatory Access Control Kernel Support
+        [*]   Reporting on access granted by Smack rules (NEW)
+        [*]   Packet marking using secmarks for netfilter (NEW)
+        [*]   Treat delivering signals as an append operation (NEW)
+        Default security module (Simplified Mandatory Access Control)  --->
+            <X> Simplified Mandatory Access Control
+
+================================
+
+scripts/config --disable DEBUG_INFO
+make clean
+make deb-pkg -j4
+...
+dpkg -i ../*.deb
+----
+
 .. install LXC & LXCFS
 
     apt-get install lxc lxcfs
@@ -42,9 +76,20 @@ for OS level virtualisation (i.e. containerization).
 
     mount -t seccontiofs /path/to/basefs /path/to/contfs
 
-=== tools
+. apply SMACK policies
 
-==== to check attrs from cmdline
+== Develop & Check
+
+After reboot try to run containers.
+
+Check all possibilities to break jails, fix and retry.
+
+NOTE: current source tree contains only basic skeleton of the VFS Filter
+and requires developers to implement its parts according to their needs.
+
+== tools
+
+=== to check attrs from cmdline
 
 [source, bash]
 ----
@@ -68,7 +113,7 @@ for OS level virtualisation (i.e. containerization).
 
 `ps -Z` show information about processes, including their SMACK labels.
 
-==== to check FS internals
+=== to check FS internals
 
 SecContIOFS contains set of tools at ```check``` dir.
 
