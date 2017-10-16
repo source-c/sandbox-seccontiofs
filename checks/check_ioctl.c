@@ -12,7 +12,7 @@ int main(int cn, char **cv)
 {
     int fd, ret = -1;
 
-    if (cn != 3)
+    if (cn != 2)
         return -1;
 
     fd = open(cv[1], O_RDONLY);
