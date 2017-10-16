@@ -79,7 +79,7 @@ seccontiofs_toggle_mode(struct file *file, void *__user * arg)
     _pr_info_tr("Processing Change Mode IOCTL call\n");
     
     if (__is_private(seccontiofs_D(dentry)->lbl)) {
-        _pr_info_tr("... Change Mode IOCTL call is blocked for %s\n", seccontiofs_F(file)->lbl);
+        _pr_info_tr("... Change Mode IOCTL call is blocked for %s\n", seccontiofs_D(dentry)->lbl);
         return err;
     }
     
