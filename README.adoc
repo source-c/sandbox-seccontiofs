@@ -58,6 +58,16 @@ for OS level virtualisation (i.e. containerization).
  # xattr <file>
 ----
 
+`ls -Z` to show the SMACK labels on files.
+
+`chsmack` to show and sett all of the SMACK attributes on files.
+
+`cp --preserve=xattr` to create a new file with the same content and SMACK attributes as an existing file.
+
+`id` and `id -Z` to show the current process SMACK label.
+
+`ps -Z` show information about processes, including their SMACK labels.
+
 ==== to check FS internals
 
 SecContIOFS contains set of tools at ```check``` dir.
